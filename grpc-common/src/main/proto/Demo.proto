@@ -1,0 +1,20 @@
+// 指定proto3格式
+syntax="proto3";
+
+package xyz.yann.grpc.proto;
+// 所在包名
+option java_package="xyz.yann.grpc.proto";
+// 最外层类名称
+option java_outer_classname="DemoProto";
+// java_multiple_files为true，因此在编译完成之后，会生成多个Message类，它们并没有被包含在DemoProto.java文件中
+option java_multiple_files=true;
+
+message MyRequest{
+	string uuid=1;
+}
+message MyResponse{
+	string resp=1;
+}
+service DemoService{
+	rpc sayHello(MyRequest) returns(stream MyResponse){};
+}

@@ -1,0 +1,77 @@
+logging.config: classpath:logging-config.xml
+# 服务端口号
+server.port: 9911
+# 设置服务名
+spring.application.name: demo-Y-hello-service
+# 设置注册中心地址
+eureka.client.registryFetchIntervalSeconds: 5
+eureka.client.service-url.defaultZone: http://localhost:9901/eureka/
+#,http://eserver2:9902/eureka/,http://eserver3:9903/eureka/
+eureka.instance.leaseRenewalIntervalInSeconds: 10
+eureka.instance.health-check-url-path: /actuator/health
+#eureka.instance.prefer-ip-address: true
+#eureka.instance.ip-address: 192.168.11.222
+#eureka.instance.metadata-map.grayversion: V1.0.1
+eureka.instance.instance-id: ${spring.cloud.client.ip-address}:${server.port}
+
+management:
+  server: 
+    port: 19911
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: ALWAYS
+    metrics: 
+      enabled: true
+    prometheus: 
+      enabled: true
+  metrics: 
+    export: 
+      prometheus: 
+        enabled: true
+
+spring:
+  http:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+  thymeleaf:
+    mode: LEGACYHTML5
+    cache: false
+  mvc: 
+     static-path-pattern: /**
+  resources: 
+     static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,classpath:/templates/
+
+server: 
+  max-http-header-size: 10485760
+     
+# MULTIPART (MultipartProperties)
+spring.servlet.multipart.enabled: true
+spring.servlet.multipart.max-file-size: 50MB
+spring.servlet.multipart.max-request-size: 100MB
+
+apollo.bootstrap.enabled: false
+apollo.meta: http://192.168.0.240:8080
+
+# redis
+prefix.name.for.redis: dummyLocalService
+spring.redis.host: 47.101.76.214
+spring.redis.port: 19000
+# 登录redis服务器的密码。
+spring.redis.password: codis123456
+# Redis数据库索引（默认为0）
+spring.redis.database: 0
+spring.redis.timeout: 15000
+# 池在给定时间可以分配的最大连接数。使用负值无限制。
+spring.redis.jedis.pool.max-active: -1
+# 池中“空闲”连接的最大数量。使用负值表示无限数量的空闲连接。
+spring.redis.jedis.pool.max-idle: 10
+# 连接分配在池被耗尽时抛出异常之前应该阻塞的最长时间量（以毫秒为单位）。使用负值可以无限期地阻止。
+spring.redis.jedis.pool.max-wait: 18000
+# 目标为保持在池中的最小空闲连接数。这个设置只有在正面的情况下才有效果。
+spring.redis.jedis.pool.min-idle: 5

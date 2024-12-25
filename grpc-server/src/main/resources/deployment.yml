@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-demo-server
+  namespace: gateway
+  labels:
+    app: grpc-demo-server
+spec:
+  replicas: 1                     #副本数
+  selector:
+    matchLabels:
+      app: grpc-demo-server   #标签选择器
+  template:
+    metadata:
+      labels:
+        app: grpc-demo-server           # 与标签选择器的值对应
+    spec:
+#      imagePullSecrets:
+#        - name: regcred1                    # 拉取镜像仓的secret固定值，创建namespace的时候已经创建
+      containers:
+        - name: grpc-demo-server
+          image: gaia-e2-01-registry.cn-shanghai.cr.aliyuncs.com/gaiaworks/grpc-server:v20241224.1433
+          imagePullPolicy: Always
+          env:
+            - name: DEPLOYED_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: RUN_ENV
+              value: application
+            - name: APP_NAME
+              value: grpc-demo-server
+            - name: JVM_OPTS
+              value: -Xms256m -Xmx512m 
+          ports:
+            - name: common-port
+              containerPort: 9911
+              protocol: TCP
+            - name: grpc-port
+              containerPort: 9822
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 1024Mi
+            limits:
+              cpu: 0.5
+              memory: 1024Mi
+          readinessProbe:
+            httpGet:
+              path: /testhealthcheck
+              port: 9911
+            initialDelaySeconds: 20 #在执行第一次探测前等待 60 秒
+            periodSeconds: 10 #kubelet 每隔 10
+          lifecycle: #Container Lifecycle Hooks
+            preStop:
+              exec:
+                command: [
+                  "sh", "-c",
+                  # Introduce a delay to the shutdown sequence to wait for the
+                  # pod eviction event to propagate.
+                  "sleep 30",
+                ]
+---            
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-demo-server-svc
+  namespace: gateway
+spec:
+  selector:
+    app: grpc-demo-server                 # 标签选择器 与上面对应
+  ports:
+    - name: common-port
+      protocol: TCP
+      port: 9911
+      targetPort: 9911
+    - name: grpc-port
+      protocol: TCP
+      port: 9822
+      targetPort: 9822
+  type: ClusterIP
+  clusterIP: None
